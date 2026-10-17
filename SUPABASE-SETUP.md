@@ -37,7 +37,7 @@ npx supabase functions deploy register --no-verify-jwt
 
 The project reference is the identifier in the project URL: `https://jkbrwuqugzkvzsaizqja.supabase.co`.
 
-`ALLOWED_ORIGIN` must exactly match the frontend origin, with `https://` and no trailing slash. For local development use `http://localhost:5173`; use `http://localhost:4173` if testing the production preview. Change it to the real website origin before launch. Only one origin is supported at a time.
+`ALLOWED_ORIGIN` must exactly match the frontend origin, with `https://` and no trailing slash. For local development use `http://localhost:5173`; use `http://localhost:4173` if testing the production preview. Change it to the real website origin before launch. A comma-separated list of exact origins is supported. When unset, localhost ports 5173 and 4173 are allowed for development only.
 
 The function is public because guests register without logging in. It checks the allowed origin, form fields, consent, file signature and size, and applies a basic IP limit. Never deploy your service role key to the website. Supabase automatically supplies the service credentials within its hosted Edge Function.
 
@@ -48,12 +48,11 @@ Copy `.env.example` to `.env` and set:
 ```dotenv
 VITE_SUPABASE_URL=https://jkbrwuqugzkvzsaizqja.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=YOUR_PUBLIC_PUBLISHABLE_KEY
-VITE_PAYMENTS_ENABLED=false
 ```
 
 The organiser’s supplied account details are in `src/bank.ts`. The corrected details have been supplied by the organiser, with Wio Bank identified by SWIFT `WIOBAEADXXX`. The IBAN uses the standard Latin `AE` prefix. Any other `VITE_BANK_*` setting overrides the corresponding account detail.
 
-Keep `VITE_PAYMENTS_ENABLED=false` until the account details and backend deployment are confirmed. Then set it to `true` and restart/rebuild:
+Registration availability is controlled on the server. Set the Edge Function secret `REGISTRATION_ENABLED=false` to pause registrations; set it to `true` to reopen. The old `VITE_PAYMENTS_ENABLED` frontend flag is no longer used. After editing frontend environment settings, restart/rebuild:
 
 ```sh
 npm ci
@@ -77,3 +76,9 @@ Submit a test registration with a small PNG/JPG/WebP receipt. You can use a clea
 For real guests, check the bank transfer, update status to `confirmed`, and contact the guest manually. The website does not automatically reconcile payments or send confirmation emails.
 
 If the function returns an error, inspect **Edge Functions → register → Logs** without logging guests’ contact data or receipt contents. A 403 usually means `ALLOWED_ORIGIN` does not match; a 503 means `REGISTRATION_ENABLED` is not `true`. The browser’s Network panel shows the function response.
+
+## Current connected project
+
+The registration tables, private receipt bucket, and `register` Edge Function are now provisioned in `agiweb` (`jkbrwuqugzkvzsaizqja`). Do not rerun the initial table migration there. The browser has public defaults for that project's URL and publishable key; `VITE_SUPABASE_*` settings can override them. Only the Edge Function uses service-role credentials.
+
+Submission is enabled unless the server secret `REGISTRATION_ENABLED` is explicitly `false`. Localhost ports 5173 and 4173 are allowed by default; set `ALLOWED_ORIGIN` to the actual production origin before deploying the website. Submit is disabled only while saving. Backend errors are shown in the form, and a reference appears only after saving succeeds.
