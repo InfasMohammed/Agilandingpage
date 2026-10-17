@@ -18,11 +18,9 @@ Deno.serve(async (req) => {
     if (!ip) return reply(400, { error: 'Unable to verify request source' });
     const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(ip));
     const ipHash = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
-    const { count, error: limitError } = await db.from('registration_attempts').select('id', { count: 'exact', head: true }).eq('ip_hash', ipHash).gte('created_at', new Date(Date.now()-600_000).toISOString());
+    const { count, error: limitError } = await db.from('registration').select('id', { count: 'exact', head: true }).eq('ip_hash', ipHash).gte('created_at', new Date(Date.now()-600_000).toISOString());
     if (limitError) throw limitError;
     if ((count ?? 0) >= 5) return reply(429, { error: 'Too many attempts. Please try again in 10 minutes.' });
-    const { error: attemptError } = await db.from('registration_attempts').insert({ ip_hash: ipHash });
-    if (attemptError) throw attemptError;
     // Bound the body even when Content-Length is absent or falsified.
     const reader = req.body?.getReader();
     if (!reader) return reply(400, { error: 'Missing form' });
@@ -31,9 +29,15 @@ Deno.serve(async (req) => {
     const bodyBytes = new Uint8Array(length); let offset = 0;
     for (const chunk of chunks) { bodyBytes.set(chunk, offset); offset += chunk.length; }
     const data = await new Response(new Blob([bodyBytes.buffer]), { headers: { 'Content-Type': req.headers.get('content-type') ?? '' } }).formData();
-    const name = String(data.get('name') ?? '').trim(); const email = String(data.get('email') ?? '').trim(); const phone = String(data.get('phone') ?? '').trim();
+    const name = String(data.get('name') ?? '').trim(); const email = String(data.get('email') ?? '').trim().toLowerCase(); const phone = String(data.get('phone') ?? '').trim();
+    const peopleText = String(data.get('people_count') ?? '');
+    const peopleCount = Number(peopleText);
+    if (!/^\d+$/.test(peopleText) || !Number.isInteger(peopleCount) || peopleCount < 1 || peopleCount > 100) return reply(400, { error: 'Number of people must be a whole number from 1 to 100.' });
     if (data.get('website')) return reply(400, { error: 'Invalid submission' });
-    if (!name || name.length > 100 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254 || !/^[+\d\s()\-]{7,25}$/.test(phone) || data.get('consent') !== 'on') return reply(400, { error: 'Please check your contact details and consent' });
+    if (name.length < 2 || name.length > 100 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254 || !/^[+\d\s()\-]{7,25}$/.test(phone) || phone.replace(/\D/g, '').length < 7 || phone.replace(/\D/g, '').length > 15 || data.get('consent') !== 'on') return reply(400, { error: 'Please check your contact details and consent' });
+    const { data: existing, error: lookupError } = await db.from('registration').select('id').eq('email', email).maybeSingle();
+    if (lookupError) throw lookupError;
+    if (existing) return reply(409, { error: 'This email is already registered. Each email can register only once.' });
     const file = data.get('receipt');
     if (!(file instanceof File) || file.size === 0 || file.size > maxSize) return reply(400, { error: 'Please upload an image up to 5 MB' });
     const bytes = new Uint8Array(await file.arrayBuffer());
@@ -45,7 +49,8 @@ Deno.serve(async (req) => {
     const id = crypto.randomUUID(); const path = `${id}/receipt.${jpeg ? 'jpg' : png ? 'png' : 'webp'}`;
     const { error: uploadError } = await db.storage.from('payment-receipts').upload(path, bytes, { contentType: mime, upsert: false });
     if (uploadError) throw uploadError; uploaded = path;
-    const { error: saveError } = await db.from('registrations').insert({ id, name, email, phone, receipt_path: path });
+    const { error: saveError } = await db.from('registration').insert({ id, name, email, phone, people_count: peopleCount, ip_hash: ipHash, receipt_path: path });
+    if (saveError?.code === '23505') { await db.storage.from('payment-receipts').remove([path]); uploaded = null; return reply(409, { error: 'This email is already registered. Each email can register only once.' }); }
     if (saveError) throw saveError;
     return reply(201, { reference: id });
   } catch {

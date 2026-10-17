@@ -21,3 +21,5 @@
 .hero-navigation nav a:hover{color:#f1d387;background:#ffffff0d}
 .hero .hero-content{padding-top:145px}
 @media(max-width:760px){.hero-navigation{padding:16px 0}.hero .hero-content{padding-top:124px}}
+
+.field-error{display:block;margin-top:6px;color:#ab3030;font-size:11px;line-height:1.5}.registration input[aria-invalid="true"]{border-color:#ab3030!important}
