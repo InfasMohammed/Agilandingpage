@@ -1,7 +1,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.118.0';
 const maxSize = 5 * 1024 * 1024;
 Deno.serve(async (req) => {
-  const allowedOrigins = (Deno.env.get('ALLOWED_ORIGIN') || 'http://localhost:5173,http://localhost:4173').split(',').map(value => value.trim()).filter(Boolean);
+  const allowedOrigins = (Deno.env.get('ALLOWED_ORIGIN') || 'http://localhost:5173,http://localhost:4173,https://asi-global-event.vercel.app,https://asi-global-event-aitiontechsl-2319s-projects.vercel.app').split(',').map(value => value.trim()).filter(Boolean);
   const requestOrigin = req.headers.get('origin');
   const origin = requestOrigin && allowedOrigins.includes(requestOrigin) ? requestOrigin : null;
   const headers = { 'Access-Control-Allow-Origin': origin ?? '', 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type', 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Vary': 'Origin', 'Content-Type': 'application/json' };

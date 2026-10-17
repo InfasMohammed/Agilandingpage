@@ -87,3 +87,11 @@ describe('unique registrations and attendee counts', () => {
         expect(race.remove).toHaveBeenCalledOnce();
     });
 });
+
+describe('production registration origin', () => {
+    it('accepts the production Vercel site and rejects other Vercel sites', async () => {
+        expect((await setup().handler(request('https://asi-global-event.vercel.app'))).status).toBe(201);
+        expect((await setup().handler(request('https://asi-global-event-aitiontechsl-2319s-projects.vercel.app'))).status).toBe(201);
+        expect((await setup().handler(request('https://unrelated.vercel.app'))).status).toBe(403);
+    });
+});

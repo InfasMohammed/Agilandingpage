@@ -87,3 +87,7 @@ Submission is enabled unless the server secret `REGISTRATION_ENABLED` is explici
 `registration` is the only application table. The consolidation migration preserves existing paid registrations, defaults their people count to 1, removes the empty legacy landing table, and removes the old attempt-log table. New records require a whole-number `people_count` from 1 to 100, including the person booking. Normalized email uniqueness is enforced by Postgres and the Edge Function; duplicates return HTTP 409 without creating another booking. IP throttling counts recent successful bookings in this same table.
 
 The form validates contact fields and group size and requires a valid receipt and agreement before enabling Submit. The server repeats validation; unchecking agreement disables Submit again.
+
+## Vercel production
+
+Project `asi-global-event` is hosted at https://asi-global-event.vercel.app (also available at https://asi-global-event-aitiontechsl-2319s-projects.vercel.app). Both exact origins and the two local development origins are included in the function's default allowlist. An explicitly set `ALLOWED_ORIGIN` secret overrides these defaults; include the production origin in that value when using it. Additional custom domains must be explicitly added before registration works on them.
