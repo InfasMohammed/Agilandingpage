@@ -1,13 +1,15 @@
-import { createClient } from 'npm:@supabase/supabase-js@2';
+import { createClient } from 'npm:@supabase/supabase-js@2.118.0';
 const maxSize = 5 * 1024 * 1024;
 Deno.serve(async (req) => {
-  const origin = Deno.env.get('ALLOWED_ORIGIN');
+  const allowedOrigins = (Deno.env.get('ALLOWED_ORIGIN') || 'http://localhost:5173,http://localhost:4173').split(',').map(value => value.trim()).filter(Boolean);
+  const requestOrigin = req.headers.get('origin');
+  const origin = requestOrigin && allowedOrigins.includes(requestOrigin) ? requestOrigin : null;
   const headers = { 'Access-Control-Allow-Origin': origin ?? '', 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type', 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Vary': 'Origin', 'Content-Type': 'application/json' };
   const reply = (status: number, body: object) => new Response(JSON.stringify(body), { status, headers });
   if (!origin || req.headers.get('origin') !== origin) return reply(403, { error: 'Origin not allowed' });
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers });
   if (req.method !== 'POST') return reply(405, { error: 'Method not allowed' });
-  if (Deno.env.get('REGISTRATION_ENABLED') !== 'true') return reply(503, { error: 'Registration is not open' });
+  if (Deno.env.get('REGISTRATION_ENABLED') === 'false') return reply(503, { error: 'Registration is not open' });
   if (Number(req.headers.get('content-length') || 0) > maxSize + 16384) return reply(413, { error: 'File too large' });
   const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
   let uploaded: string | null = null;
