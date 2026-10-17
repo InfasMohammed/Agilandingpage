@@ -7,7 +7,17 @@
 
 .audience-photo{width:100%;height:100%;background-image:url('/images/audiences.png');background-size:400% auto;background-repeat:no-repeat;transition:transform .5s}.audience-grid article:hover .audience-photo{transform:scale(1.04)}
 
-/* Header navigation actions */
-.nav nav .nav-button{display:inline-flex;align-items:center;justify-content:center;min-height:43px;padding:12px 17px;border:1px solid #d9bd82;border-radius:5px;background:#fffaf0;color:var(--navy);white-space:nowrap;transition:background .2s,border-color .2s}
-.nav nav .nav-button:hover{background:#f1e4c8;border-color:#b28a37}
-@media(max-width:760px){.menu{margin-left:auto}.nav nav .nav-button{width:100%}}
+/* Logo and dropdown sit directly over the hero image on every screen size. */
+.hero-navigation{position:absolute;inset:0 0 auto;z-index:10;padding:20px 0;background:transparent}
+.hero-navigation .nav{position:relative;height:auto;justify-content:space-between}
+.hero-navigation .brand small{color:#e7e5df}
+.hero-navigation .brand em{color:#d3bc8d}
+.hero-navigation .menu{display:inline-flex;align-items:center;justify-content:center;margin-left:auto;min-width:46px;min-height:46px;padding:10px;border:1px solid #ffffff50;border-radius:6px;background:#061a2e99;color:#fff}
+.hero-navigation .menu:hover{background:#16384e}
+.hero-navigation .menu svg{width:25px;height:25px}
+.hero-navigation nav{position:absolute;left:auto;right:0;top:calc(100% + 12px);margin:0;display:flex;flex-direction:column;gap:0;width:230px;padding:8px;background:#071c30;border:1px solid #ffffff35;border-radius:8px;box-shadow:0 12px 30px #0004;font-size:13px}
+.hero-navigation nav[hidden]{display:none}
+.hero-navigation nav a{padding:14px 16px;color:#fff;border-radius:4px}
+.hero-navigation nav a:hover{color:#f1d387;background:#ffffff0d}
+.hero .hero-content{padding-top:145px}
+@media(max-width:760px){.hero-navigation{padding:16px 0}.hero .hero-content{padding-top:124px}}
