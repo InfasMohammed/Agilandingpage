@@ -12,10 +12,9 @@ You can share just the project URL and publishable key here so the frontend can 
 
 ## 2. Create the tables and private receipt bucket
 
-Open the project’s **SQL Editor**, create a new query, paste the full contents of `supabase/migrations/202610170001_registrations.sql`, and run it once. This creates:
+Open the project’s **SQL Editor**, create a new query, run all SQL files in `supabase/migrations/` in filename order once. This creates:
 
-- `registrations`: guest contact information, private receipt path, and review status.
-- `registration_attempts`: request throttling records.
+- `registration`: guest contact information, people count, private receipt path, review status, and IP hash for throttling. Emails are normalized and unique.
 - `payment-receipts`: a private image bucket with a 5 MB limit.
 
 Do not add public table access or public bucket policies. The browser submits through the Edge Function.
@@ -67,7 +66,7 @@ For static hosting, set the same frontend variables in the host’s build settin
 Submit a test registration with a small PNG/JPG/WebP receipt. You can use a clearly labelled test image to test the system; do not treat this as a verified payment.
 
 - The website must display a reference only after the function saves the registration.
-- In **Table Editor → registrations**, find the matching `pending` record.
+- In **Table Editor → registration**, find the matching `pending` record.
 - In **Storage → payment-receipts**, verify that its receipt exists and is private.
 - Confirm the team can open the receipt through the authenticated dashboard.
 - Verify an unauthenticated request cannot list registrations or view private receipt URLs.
@@ -79,6 +78,12 @@ If the function returns an error, inspect **Edge Functions → register → Logs
 
 ## Current connected project
 
-The registration tables, private receipt bucket, and `register` Edge Function are now provisioned in `agiweb` (`jkbrwuqugzkvzsaizqja`). Do not rerun the initial table migration there. The browser has public defaults for that project's URL and publishable key; `VITE_SUPABASE_*` settings can override them. Only the Edge Function uses service-role credentials.
+The single `registration` table, private receipt bucket, and `register` Edge Function are now provisioned in `agiweb` (`jkbrwuqugzkvzsaizqja`). Do not rerun the initial table migration there. The browser has public defaults for that project's URL and publishable key; `VITE_SUPABASE_*` settings can override them. Only the Edge Function uses service-role credentials.
 
 Submission is enabled unless the server secret `REGISTRATION_ENABLED` is explicitly `false`. Localhost ports 5173 and 4173 are allowed by default; set `ALLOWED_ORIGIN` to the actual production origin before deploying the website. Submit is disabled only while saving. Backend errors are shown in the form, and a reference appears only after saving succeeds.
+
+## Single-table registration rules
+
+`registration` is the only application table. The consolidation migration preserves existing paid registrations, defaults their people count to 1, removes the empty legacy landing table, and removes the old attempt-log table. New records require a whole-number `people_count` from 1 to 100, including the person booking. Normalized email uniqueness is enforced by Postgres and the Edge Function; duplicates return HTTP 409 without creating another booking. IP throttling counts recent successful bookings in this same table.
+
+The form validates contact fields and group size and requires a valid receipt and agreement before enabling Submit. The server repeats validation; unchecking agreement disables Submit again.
