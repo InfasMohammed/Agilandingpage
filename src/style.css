@@ -30,3 +30,9 @@
 @media(max-width:760px){.hero .event-headline{font-size:clamp(31px,7.4vw,52px);letter-spacing:-1.2px}.hero .hero-sub{font-size:14px;max-width:320px}.headline-break{display:none}}
 
 .footer-logo{display:block;flex-shrink:0;width:180px;max-width:100%}.footer-logo img{display:block;width:100%;height:auto;border-radius:6px}
+
+/* Keep the exact venue map fully usable, with event details underneath. */
+.venue-visual{height:auto;padding-right:0;display:flex;flex-direction:column;gap:16px;min-width:0}
+.venue-map{display:block;width:100%;height:340px;border:0;border-radius:8px;background:#eef1f2}
+.venue-visual .venue-card{position:static;width:100%;margin:0}
+@media(max-width:760px){.venue-map{height:300px}}
