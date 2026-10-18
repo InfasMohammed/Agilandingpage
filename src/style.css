@@ -23,3 +23,10 @@
 @media(max-width:760px){.hero-navigation{padding:16px 0}.hero .hero-content{padding-top:124px}}
 
 .field-error{display:block;margin-top:6px;color:#ab3030;font-size:11px;line-height:1.5}.registration input[aria-invalid="true"]{border-color:#ab3030!important}
+
+/* Event title leads the hero; registration is also available after step 03. */
+.hero .event-headline{font-size:clamp(38px,4.6vw,64px);line-height:1.12;letter-spacing:-2px;max-width:740px}
+.step-register{margin-top:16px}
+@media(max-width:760px){.hero .event-headline{font-size:clamp(31px,7.4vw,52px);letter-spacing:-1.2px}.hero .hero-sub{font-size:14px;max-width:320px}.headline-break{display:none}}
+
+.footer-logo{display:block;flex-shrink:0;width:180px;max-width:100%}.footer-logo img{display:block;width:100%;height:auto;border-radius:6px}
