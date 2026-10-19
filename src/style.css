@@ -42,3 +42,10 @@
 .package-thumbnail{display:block;flex:0 0 84px;width:84px;height:84px;border-radius:8px;background-image:url('/images/package-thumbnails.webp');background-size:300% 100%;background-repeat:no-repeat;background-color:#eee9df;border:1px solid #e8dfcb}
 .package-items .item-check{align-self:flex-start}
 @media(max-width:760px){.package-thumbnail{flex-basis:68px;width:68px;height:68px}.package-items>div{gap:12px}.package-items h4{line-height:1.4}}
+
+/* Use the supplied official logo in both brand placements without distortion. */
+.hero-navigation .official-brand img{width:128px;height:auto;display:block}
+.hero-navigation .menu{align-self:flex-start;margin-top:10px}
+.hero .hero-content{padding-top:176px}
+.footer-logo img{border-radius:0}
+@media(max-width:760px){.hero-navigation .official-brand img{width:100px}.hero .hero-content{padding-top:148px}}
