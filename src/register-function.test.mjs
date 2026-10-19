@@ -95,3 +95,10 @@ describe('production registration origin', () => {
         expect((await setup().handler(request('https://unrelated.vercel.app'))).status).toBe(403);
     });
 });
+
+describe('custom event domain', () => {
+    it('accepts the verified event domain without trusting unrelated domains', async () => {
+        expect((await setup().handler(request('https://events.asiglobalbranding.net'))).status).toBe(201);
+        expect((await setup().handler(request('https://other.asiglobalbranding.net'))).status).toBe(403);
+    });
+});
